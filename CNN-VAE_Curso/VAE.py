@@ -93,11 +93,26 @@ class ConvVAE(object):
             #Aquí termina la codificación del encoder, ahora fal ta la parte variacional.
             #Esta es la capa densa para el vector aplanado, esta parte tiene una forma estocástica
             #normalizada con mu =0, y sigma =1
+            #Construir la capa 'V' del VAE
             
-            self.mu= tf.layers.dense(h, )
-            self.sigma= tf.
+            self.mu= tf.layers.dense(h, self.z_size, name = 'enc_fc_mu')
+            self.logvar = tf.layers.dense(h, self.z_size, name = 'enc_fc_logvar') #Exponente de la distribución
+            self.sigma= tf.exp(self.logvar/2.0) #Así se introduce la sigma, y me queda la desviación
+            #Muestreo de la normal estándar, esto es la parte estocástica
+            self.epsilon = tf.random_normal([self.batch_size, self.z_size]) #Se utiliza el tamaño del batches y se utiliza el tamaño de z
+            self.z = self.mu + self.sigma * self.epsilon
+            
+            #Decodificador Decoder del VAE
+            h = tf.layers.dense(self.z, 1024, name ='dec_fc')
+            h = tf.reshape(h, shape =[-1, 1,1,1024]) #Recuerda que el -1 sirve para especificar que quieres un vector columna
+            h = tf.layers.Conv2D_Transpose(h, 128,5, strides = 2, activation = tf.nn.relu, name ='dec_deconv1')
+            h = tf.layers.Conv2D_Transpose(h, 64,5, strides = 2, activation = tf.nn.relu, name ='dec_deconv2')
+            h = tf.layers.Conv2D_Transpose(h, 32,6, strides = 2, activation = tf.nn.relu, name ='encoder_deconv3')
+            self.y = tf.layers.Conv2D_Transpose(h, 3,6, strides = 2, activation = tf.nn.sigmoid, name ='last_layer')
+            
+            return self.y
             
     
-    pass
+    return self
         
     pass
