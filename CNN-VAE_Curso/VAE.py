@@ -110,9 +110,33 @@ class ConvVAE(object):
             h = tf.layers.Conv2D_Transpose(h, 32,6, strides = 2, activation = tf.nn.relu, name ='encoder_deconv3')
             self.y = tf.layers.Conv2D_Transpose(h, 3,6, strides = 2, activation = tf.nn.sigmoid, name ='last_layer')
             
-            return self.y
+            #Implementación de la operación de entrenamiento
+            '''
+            El optimizador tiene que ir reduciendo el error de la predicción del auto encoder,
+            latécnica del global step es la cantidad del pasod el gradiente decendente, como el
+            learning rate => global_step es un tensor de tensorflow, que es variable inicializado en
+            0, con su nombre y se especifica que no es entrenable, es un argumento administrado al algoritmo
+            Por lo que no se actualiza
+            '''
+            if self.is_training:
+                self.global_step = tf.Variable(0, name='global_estep', trainable = False)
+                #Hacemos la suma en todas las dimensiones cuadráticasnción de pérdidas
+                #Reduction indices hace caso a las dimensiones del tensor X,Y,RGB
+                self.r_loss = tf.reduce_sum(tf.square(self.x-self.y), reduction_indices = [1,2,3])
+                #Con el reduce_mean se obtiene la "media de los errores"
+                self.r_los = tf.reduce_mean(self.r_loss)
+                #Kl_loss es el por la divergencia del kurval liner, es muy compleja
+                #Se implementa directamente en python
+                self.kl_loss = -0.5 * tf.reduce_sum(1+self.logvar-tf.square(self.mu) - tf.exp(self.logvar))
+                #Segunda transformación del kl
+                self.kl_loss = tf.maximum(self.kl_loss, self.kl_tolerance * self.z_size)
+                #Tercer transformación del kl, que para cada posición te quedas con la media que resume todo el koolback laigner
+                self.kl_los = tf.reduce_mean(self.kl_loss)
+                #Se resume todo el error
+                self.loss = self.r_loss + self.kl_loss
+                self.lr = tf.Variable(self.learning_rate, trainable = False)
+                self.optimizer = tf.train.AdamOptimizer(self.lr)
+                grads = self.optimizer.compute_gradients(self.loss)
+                self.traing_op = self.optimizer.apply_gradients(grads, global_step = self.global_step, name = "train_strep")
+            self.init = tf.global_variables_initializer()
             
-    
-    return self
-        
-    pass
