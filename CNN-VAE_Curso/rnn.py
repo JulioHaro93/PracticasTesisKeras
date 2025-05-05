@@ -98,4 +98,28 @@ class MDNRNN(object):
         with tf.variable_scope("RNN"):
             output_w = tf.get_variable("output_w", shape = [self.hps.rnn_size, NOUT])
             output_b = tf.get_variable("output_b", shape =[NOUT])
-        
+        output, last_state = tf.nn.dynamic_rnn(cell, inputs = actual_input_x, sequence_length = None,
+                                               initial_state = self.initial_state,
+                                               dtype = tf.float32,
+                                               parallel_iterations=None,
+                                               swap_memory = True, #para propagar errores de CPU a GPU
+                                               time_major = False,
+                                               scope = "RNN")
+        """
+        Sigue la parte de la capa de densidad mixta, en donde se considera la parte de la probabilidad
+        con respecto a la normalidad de los datos, hasta aquí se trata de una red neuronal recurrente
+        convencional cuya salida es determinista, esto puede limitar una red neuronal, 
+        pero aquí se genera una nueva capa que va por encima a través de las densidades gaussianas una
+        predicción estocástica (contrario al determinismo de la RNN)
+
+        Aquí consideramos que KMIX parte del número de densidades
+        """
+        #Construcción de la capa de Densidad Mixta MDN
+
+        #Comenzamos aplanando el vector de salida para que pueda multiplicarse
+        #rnn_size te especifíca los 256 elementos para poder aplanar de 3 dimensiones a un vector columna de 256
+        output = tf.reshape(output, [-1, hps.rnn_size])
+        #Por fin hacemos la operación matricial para obtener la matriz resultante de la capa
+        #Las dimensiones son dimensión1 por dimensión2
+        output = tf.nn.xw_plus_b(output, output_w, output_b) #Este es el siguiente vector latente para la siguiente capa
+        output = tf.reshape(output, )
