@@ -122,4 +122,19 @@ class MDNRNN(object):
         #Por fin hacemos la operación matricial para obtener la matriz resultante de la capa
         #Las dimensiones son dimensión1 por dimensión2
         output = tf.nn.xw_plus_b(output, output_w, output_b) #Este es el siguiente vector latente para la siguiente capa
-        output = tf.reshape(output, )
+        output = tf.reshape(output, [-1, KMIX*3]) #Quince dimensiones, ésto va a la capa del controlador
+
+        self.final_state = last_state #último vector para poder retroalimentar para la RNN
+
+        def get_mdn_coef(output):
+            #Me parte la salida para poder generar las salidas
+            """para el eje axis = 1 si horizontal, 0 si en vertical"""
+            logmix, mean, logstd = tf.split(output, 3,1 )
+            logmix = logmix - tf.reduce_logsumexp(logmix, 1, keepdims = True)
+            return logmix, mean, logstd
+        out_logmix, out_mean, out_logstd = get_mdn_coef(output)
+    
+        self.output_logmix = out_logmix
+        self.out_mean = out_mean
+        self.out_logstd = out_logstd
+        
