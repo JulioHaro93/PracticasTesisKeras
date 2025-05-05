@@ -60,5 +60,25 @@ class MDNRNN(object):
         LENGTH = hps.max_seq_width
         if self.is_training:
             self.global_step = tf.Variable(0, name = 'global_step', trainable = False)
+        #Capa LSTM, no siempre se añade el dropout de olvido en todos los casos
+        #Por eso se utilizan 3 variables booleanas que nos ayudan a activar la dropout
+        cell_fn = tf.contrib.rnn.LayerNormBasicLSTMCell
+        #Las variables booleanas siguientes, son las mismas que gobiernan las decisiones
+        #a considerar en cada vuelta de la recurrencia
+        use_recurrent_dropout = False if self.hps.use_recurrent_dropout ==0 else True
+        use_inpout_dropout = False if self.hps.use_input_dropout ==0 else True
+        use_outpout_dropout = False if self.hps.use_output_fropout == 0 else True
+        use_layer_norm = False if self.hps.use_layern_norm ==0 else True
+        #Usa el dropout
+        if use_recurrent_dropout:
+            cell = cell_fn(hps.rnn_size, layer_norm = use_layer_norm, dropout_keep_prob = self.hps.recurrent_dropout_prob)
+        #No usa el dropout
+        else:
+            cell = cell_fn(hps.rnn_size, layer_norm= use_layer_norm)
+        if use_inpout_dropout:
+            #imput_keep_prob
+            cell = tf.nn.rnn_cell.DropoutWrapper(cell, input_keep_prob = self.hps.input_dropout_prob)
+        if use_outpout_dropout:
+            cell = cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob = self.hps.output_dropout_prob)
+        self.cell = cell
         
-        pass
