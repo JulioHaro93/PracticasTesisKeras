@@ -137,4 +137,34 @@ class MDNRNN(object):
         self.output_logmix = out_logmix
         self.out_mean = out_mean
         self.out_logstd = out_logstd
-        
+
+        """
+        implementación del entrenamiento
+        En este caso es más complejo que con la CNN-VAE, ya que es estocástica
+        por lo que la operación es más compleja
+        """
+        #constante que aparece en la función de distribución Gaussiana
+        logSqrtTwoPi = np.log(np.sqrt(2.0*np.pi))
+        #Esta parte la proporciona 100% el curso
+        def tf_lognormal(y, mean, logstd):
+            return -0.5* ((y-mean)/tf.exp(logstd))**2 - logstd - logSqrtTwoPi
+        def get_lossfunc(logmix, mean, logstd,y):
+            v = logmix + tf_lognormal(y, mean, logstd)
+            v= tf.reduce_logsumexp(v, 1, keepdims= True)
+            return - tf.reduce_mean(v)
+        flat_target_data = tf.reshape(self.output_x, [-1, 1])
+        lossfunc = get_lossfunc(out_logmix, out_mean, out_logstd, flat_target_data)
+        self.cost = tf.reduce_mean(lossfunc)
+
+        """
+        El último paso es para evitar el desvanecimiento y el exploding de los gradientes
+        haciendo por cachitos el learning rate
+        traibale = False para que sea el programador quien va modificando el learning rate
+        """
+        if self.hps.is_training ==1:
+            self.lr = tf.Variable(self.hps.learning_rate, trainable = False)
+            self.optimizer = tf.train.AdamOptimizer()
+            gvs = self.optimizer.compute_gradients(self.cost)
+            capped_gvs = [(tf.clip_by_value(grad, -self.hps.grad_clip, self.hos.grad_clip), var) for grad, var in gvs]
+            self.train_op = self.optimizer.apply_gradients(capped_gvs, global_step = self.global_step, name = "train_step")
+        self.init = tf.global_variables_initializer
