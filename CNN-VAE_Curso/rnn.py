@@ -57,7 +57,7 @@ class MDNRNN(object):
         #Una entrada es del VAE, y la otra es del mismo controlador (Recursión)
         INWIDTH = hps.input_seq_width
         OUTWIDTH = hps.output_seq_width
-        LENGTH = hps.max_seq_width
+        LENGTH = hps.max_seq_len
         if self.is_training:
             self.global_step = tf.Variable(0, name = 'global_step', trainable = False)
         #Capa LSTM, no siempre se añade el dropout de olvido en todos los casos
@@ -81,4 +81,21 @@ class MDNRNN(object):
         if use_outpout_dropout:
             cell = cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob = self.hps.output_dropout_prob)
         self.cell = cell
+        #Clase de placeholder
+        """
+        Es un submódulo de tensorflow, recurrente o no, espera un formato de salida y entrada
+        pero en este caso se utiliza como referencia de un dato que va cambiando en cada
+        parte de la recurrencia, un placeholder para las entradas y otro para las salidas
+        """
+        self.sequence_lengths = LENGTH
+        self.input_x = tf.placeholder(dtype= tf.float32, shape = [self.hps.batch_size, self.sequence_lengths, INWIDTH])
+        self.output_x = tf.placeholder(dtype = tf.float32, shape = [self.hps.batch_size, self.sequence_lengths, OUTWIDTH])
+        actual_input_x = self.input_x
+
+        self.initial_state = cell.zero_state(batch_size = self.hps.batch_size, dtype = tf.float32)
+        #Para matrices de peos y bías obtenemos dos tensores
+        NOUT = OUTWIDTH * KMIX * 3
+        with tf.variable_scope("RNN"):
+            output_w = tf.get_variable("output_w", shape = [self.hps.rnn_size, NOUT])
+            output_b = tf.get_variable("output_b", shape =[NOUT])
         
