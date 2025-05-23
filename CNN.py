@@ -32,335 +32,104 @@ from sklearn.model_selection import train_test_split
 # Tamaño de imagen a redimensionar
 img_size = (224, 224)
 print("inicio")
-# Listas para guardar imágenes y etiquetas
-X = []
-y = []
-paths ={
-        'Betidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/redimensionadas/Beatidae/*.jpg',
-        'Canidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/redimensionadas/Canidae/*.jpg',
-        'Heptageniidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/redimensionadas/Heptageniidae/*.jpg',
-        'Leptohyphidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/redimensionadas/Leptohyphidae/*.jpg',
-        'Leptophlebiidae':'//home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/redimensionadas/Leptophlebiidae*.jpg'
-        }
 
-# Cargar imágenes y asignar etiquetas
-for label, path_pattern in paths.items():
-    files = glob.glob(path_pattern)
-    for file in files:
-        img = load_img(file, target_size=img_size)
-        img_array = img_to_array(img) / 255.0  # Normalizar
-        X.append(img_array)
-        y.append(label)
 
-# Convertir a arrays de NumPy
-X = np.array(X)
-y = np.array(y)
+print("Cargando dataset")
 
-# Codificar etiquetas a enteros
+def cargar_dataset_npy(directorio_base):
+    X = []
+    y = []
+    clases = sorted(os.listdir(directorio_base))
+    
+    for clase in clases:
+        print(clase)
+        clase_dir = os.path.join(directorio_base, clase)
+        if not os.path.isdir(clase_dir):
+            continue  # Ignorar archivos sueltos
+
+        archivos = [f for f in os.listdir(clase_dir) if f.endswith('.npy')]
+
+        for archivo in archivos:
+            path_archivo = os.path.join(clase_dir, archivo)
+            img_array = np.load(path_archivo)
+            X.append(img_array)
+            y.append(clase)
+    return np.array(X), np.array(y)
+
+directorio_numpy = "/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/preprocesadas_numpy"
+X, y = cargar_dataset_npy(directorio_numpy)
+
 from sklearn.preprocessing import LabelEncoder
-le = LabelEncoder()
-y_encoded = le.fit_transform(y)  # clases: 0, 1, 2, ...
+from sklearn.model_selection import train_test_split
 
-# Separar en entrenamiento y prueba
+le = LabelEncoder()
+y_encoded = le.fit_transform(y)
+
 X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.2, random_state=42)
 
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
+import matplotlib.pyplot as plt
 
-train_gen = datagen.flow_from_directory(
-    directory='/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/redimensionadas/',
-    target_size=(224, 224),
-    batch_size=10,
-    class_mode='sparse',
-    subset='training'
-)
-
-val_gen = datagen.flow_from_directory(
-    directory='/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/redimensionadas',
-    target_size=(224, 224),
-    batch_size=10,
-    class_mode='sparse',
-    subset='validation'
-)
+plt.imshow(X_train[0])
+plt.title(f"Clase: {le.inverse_transform([y_train[0]])[0]}")
+plt.axis('off')
+plt.show()
 
 
-
-print("corremos la convolucional")
-model = tf.keras.models.Sequential()
-
-model.add(tf.keras.layers.Conv2D(filters = 32, kernel_size=5, strides =(1,1), padding='same', activation = 'relu', input_shape=(224, 224, 3)))
-model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
-model.add(tf.keras.layers.Conv2D(64, kernel_size=5, strides = (1,1), padding = 'same', activation='relu'))
-model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
-model.add(tf.keras.layers.Conv2D(64, kernel_size=5, strides = (1,1), padding = 'same', activation='relu'))
-model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
-model.add(tf.keras.layers.Conv2D(64, kernel_size=5, strides = (1,1), padding = 'same', activation='relu'))
-model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
-model.add(tf.keras.layers.Conv2D(64, kernel_size=5, strides = (1,1), padding = 'same', activation='relu'))
-model.add(tf.keras.layers.Flatten()) #Aquí se aplana el vector de características. vamos a ver qué tal jala para el dataset al natural
-
-model.add(tf.keras.layers.Dense(units=128, activation='relu'))
-model.add(tf.keras.layers.Dense(units=128, activation='relu'))
-
-model.add(tf.keras.layers.Dense(units = 6, activation='softmax'))
-
-model.summary()
-
-model.compile(optimizer='adam', loss = 'sparse_categorical_crossentropy', metrics = ['sparse_categorical_accuracy'])
-
-model.fit(train_gen, validation_data= val_gen, epochs= 10, batch_size=10)
-
-test_loss, test_accuracy = model.evaluate(val_gen)
-print("Test accuracy: {}".format(test_accuracy))
-print("Test loss: {}".format(test_loss))
-
-"""#**CNN-VAE**"""
-
-
-"""
-TRASH
-
-print(np.__version__)
+def guardaPesosYBias(model):
+    try:
+        model_name = 'Primer_CNN_5_capitasBBs.h5'
+        tf.keras.models.save_model(model, model_name)
+        print("intentando versión para dispositivos móviles")
+        converter = tf.lite.TFLiteConverter.from_keras_model(model)
+        return "Se pudo"
+    except:
+        print("No se pudo guardar el archivillo, lamento las horas invertidas entrenando")
+        print("En serio perdón, att: aparato computador")
+        return "No se pudo :("
 
 
 
-
-
-train_files =[]
-train_labels =[]
-test_files=[]
-test_labels =[]
-
-for label, pattern in paths.items():
-  files = glob.glob(pattern)
-
-  train, test = train_test_split(files, test_size=0.2, random_state=53)
-  train_files.extend(train)
-
-  train_labels.extend([label]*len(train))
-
-  test_labels.extend([label]*len(test))
-
-img= cv2.imread(train_files[550])
-
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-plt.imshow(img)
-
-Redimensionar los tamaños con cv2.resize
-
-# Lista de rutas a tus carpetas
-carpetas = [
+def iniciarModeloNormalillo(X_train, y_train, X_test, y_test):
     
+    print("corremos la convolucional")
+    model = tf.keras.models.Sequential()
+
+    model.add(tf.keras.layers.Conv2D(filters = 32, kernel_size=5, strides =(1,1), padding='same', activation = 'relu', input_shape=(224, 224, 3)))
+    model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
+    model.add(tf.keras.layers.Conv2D(64, kernel_size=5, strides = (1,1), padding = 'same', activation='relu'))
+    model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
+    model.add(tf.keras.layers.Conv2D(64, kernel_size=5, strides = (1,1), padding = 'same', activation='relu'))
+    model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
+    model.add(tf.keras.layers.Conv2D(64, kernel_size=5, strides = (1,1), padding = 'same', activation='relu'))
+    model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
+    model.add(tf.keras.layers.Conv2D(64, kernel_size=5, strides = (1,1), padding = 'same', activation='relu'))
+    model.add(tf.keras.layers.Flatten()) #Aquí se aplana el vector de características. vamos a ver qué tal jala para el dataset al natural
+
+    model.add(tf.keras.layers.Dense(units=128, activation='relu'))
+    model.add(tf.keras.layers.Dense(units=128, activation='relu'))
+
+    model.add(tf.keras.layers.Dense(units = 6, activation='softmax'))
+
+    model.summary()
+
+    model.compile(optimizer='adam', loss = 'sparse_categorical_crossentropy', metrics = ['sparse_categorical_accuracy'])
+
+    model.fit(X_train, y_train, epochs= 10, batch_size=10)
+
+    test_loss, test_accuracy = model.evaluate(X_test, y_test)
+    print("Test accuracy: {}".format(test_accuracy))
+    print("Test loss: {}".format(test_loss))
+    print("Ha terminao de entrenarse lar red")
+    sepudo= guardarPesosYBias(model)
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-for carpeta in carpetas:
+    return sepudo
 
-    rutas = glob.glob(os.path.join(carpeta, '*.jpg'))
+input = ("continuar? sí, 1")
 
-    for ruta in rutas:
-        img = cv2.imread(ruta)
-        if img is not None:
-            altos.append(img.shape[0])
-            anchos.append(img.shape[1])
-
-avg_altura = int(np.mean(altos))
-avg_ancho = int(np.mean(anchos))
-
-print(f"Tamaño promedio: {avg_ancho}x{avg_altura}")
-
-extensiones = ['*.jpg', '*.jpeg', '*.png']
-
-for carpeta in carpetas:
-    carpeta_redimen = os.path.join(carpeta, 'redimen')
-    os.makedirs(carpeta_redimen, exist_ok=True)
-
-    for ext in extensiones:
-        rutas = glob.glob(os.path.join(carpeta, ext))
-
-        for ruta in rutas:
-            img = cv2.imread(ruta)
-            if img is not None:
-                img_resized = cv2.resize(img, (avg_ancho, avg_altura))
-                nombre_archivo = os.path.basename(ruta)
-                ruta_guardado = os.path.join(carpeta_redimen, nombre_archivo)
-                cv2.imwrite(ruta_guardado, img_resized)
-print("Paths:")
-paths ={
-        'Betidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Beateidae/bordeadas/redimen/*.jpg',
-        'Canidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Caenidae/bordeadas/redimen/*.jpg',
-        'Heptageniidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Heptageniidae/bordeadas/redimen/*.jpg',
-        'Leptohyphidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Leptohyphidae/bordeadas/redimen/*.jpg',
-        'Leptophlebiidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Leptophlebiidae/bordeadas/redimen/*.jpg'
-        }
-
-
-train_files =[]
-train_labels =[]
-test_files=[]
-test_labels =[]
-print("preparación de los datos bordeados")
-for label, pattern in paths.items():
-  files = glob.glob(pattern)
-
-  train, test = train_test_split(files, test_size=0.2, random_state=53)
-  train_files.extend(train)
-
-  train_labels.extend([label]*len(train))
-
-  test_labels.extend([label]*len(test))
-
-img_size = (3369,3850)
-batch_size = 32
-
-dataset_path = '/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera'
-print("peración del dataset para todos los datos")
-train_ds = tf.keras.utils.image_dataset_from_directory(
-    dataset_path,
-    labels='inferred',
-    label_mode='int',
-    batch_size=batch_size,
-    image_size=img_size,
-    shuffle=True,
-    seed=53,  # número mágico xD
-    validation_split=0.2,
-    subset='training'
-)
-
-val_ds = tf.keras.utils.image_dataset_from_directory(
-    dataset_path,
-    labels='inferred',
-    label_mode='int',
-    batch_size=batch_size,
-    image_size=img_size,
-    shuffle=True,
-    seed=53,
-    validation_split=0.2,
-    subset='validation'
-)
-
-#**Convolucional sencilla**
-
-Usaré 5 capas de con Relu
-
-
-
-
-
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-
-img_size = (224,224)
-
-datagen = ImageDataGenerator(rescale = 1./255, validation_split=0.2)
-
-train_generator = datagen.flow_from_directory(
-    '/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/',
-    target_size=img_size,
-    batch_size=32,
-    class_mode='categorical',
-    subset='training',
-    shuffle=True
-)
-
-val_generator = datagen.flow_from_directory(
-    '//home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/',
-    target_size=img_size,
-    batch_size=32,
-    class_mode='categorical',
-    subset='validation',
-    shuffle=False
-)
-
-
-Redimensionar los tamaños con cv2.resize
-
-# Lista de rutas a tus carpetas
-carpetas = [
-    '/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Beateidae/bordeadas/',
-    #'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Caenidae/bordeadas/',
-    0#'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Heptageniidae/bordeadas/',
-    #'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Leptohyphidae/bordeadas',
-    #'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Leptophlebiidae/bordeadas/'
-]
-
-anchos = []
-altos = []
-
-for carpeta in carpetas:
-
-    rutas = glob.glob(os.path.join(carpeta, '*.jpg'))
-
-    for ruta in rutas:
-        img = cv2.imread(ruta)
-        if img is not None:
-            altos.append(img.shape[0])
-            anchos.append(img.shape[1])
-
-avg_altura = int(np.mean(altos))
-avg_ancho = int(np.mean(anchos))
-
-print(f"Tamaño promedio: {avg_ancho}x{avg_altura}")
-
-extensiones = ['*.jpg', '*.jpeg', '*.png']
-
-for carpeta in carpetas:
-    carpeta_redimen = os.path.join(carpeta, 'redimen')
-    os.makedirs(carpeta_redimen, exist_ok=True)
-
-    for ext in extensiones:
-        rutas = glob.glob(os.path.join(carpeta, ext))
-
-        for ruta in rutas:
-            img = cv2.imread(ruta)
-            if img is not None:
-                img_resized = cv2.resize(img, (avg_ancho, avg_altura))
-                nombre_archivo = os.path.basename(ruta)
-                ruta_guardado = os.path.join(carpeta_redimen, nombre_archivo)
-                cv2.imwrite(ruta_guardado, img_resized)128, activation='relu'))
-train_files =[]
-train_labels =[]
-test_files=[]
-test_labels =[]
-
-for label, pattern in paths.items():
-  files = glob.glob(pattern)
-
-  train, test = train_test_split(files, test_size=0.2, random_state=53)
-  train_files.extend(train)
-
-  train_labels.extend([label]*len(train))
-
-  test_labels.extend([label]*len(test))
-
-img= cv2.imread(train_files[550])
-
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-plt.imshow(img)
-
-"""
-
-"""
-paths ={
-        'Betidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Beateidae/bordeadas/*.jpg',
-        'Canidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Caenidae/bordeadas/*.jpg',
-        'Heptageniidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Heptageniidae/bordeadas/*.jpg',
-        'Leptohyphidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Leptohyphidae/bordeadas/*.jpg',
-        'Leptophlebiidae':'/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Leptophlebiidae/bordeadas/*.jpg'
-        }
-
-"""
-
-
+while True:
+    if input ==1:
+        iniciarModeloNormalillo()
+    else:
+        print("Aquí aguantándote a que quieras")
 
