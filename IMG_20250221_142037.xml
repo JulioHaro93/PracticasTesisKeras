@@ -1,0 +1,26 @@
+<annotation>
+	<folder>frascos 238 y 370</folder>
+	<filename>IMG_20250221_142037.jpg</filename>
+	<path>C:\Users\Julio\Documents\tesis\procesadas\Ephemeroptera\Beateidae\Sam-Cel\frascos 238 y 370\IMG_20250221_142037.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>3060</width>
+		<height>4080</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Beatidae</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1031</xmin>
+			<ymin>266</ymin>
+			<xmax>2183</xmax>
+			<ymax>2449</ymax>
+		</bndbox>
+	</object>
+</annotation>
