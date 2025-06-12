@@ -1,0 +1,11 @@
+train: #Ruta de entrenamiento
+val: #ruta de validación
+
+nc: 5
+
+names:
+  0: Beatidae
+  1: Canidae
+  2: Heptageniidae
+  3: Leptohyphidae
+  4: Leptoplebiidae

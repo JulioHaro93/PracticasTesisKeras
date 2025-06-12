@@ -8,7 +8,7 @@ Este es un archivo temporal.
 import os
 import gc
 
-directorio = "/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/preprocesadas_numpy/Beatidae"
+directorio = "C:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Beateidae/homogeneas"
 
 # Parte 1: Intervalos a eliminar
 intervalos = [
@@ -47,14 +47,14 @@ aislados = [
 # 🧹 Eliminar por intervalos
 for inicio, fin in intervalos:
     for i in range(inicio, fin + 1):
-        archivo = os.path.join(directorio, f"Beatidae_{i}.npy")
+        archivo = os.path.join(directorio, f"{i}.jpg")
         if os.path.exists(archivo):
             os.remove(archivo)
     gc.collect()  # liberar memoria
 
 # 🧹 Eliminar casos aislados
 for i in aislados:
-    archivo = os.path.join(directorio, f"Beatidae_{i}.npy")
+    archivo = os.path.join(directorio, f"{i}.jpg")
     if os.path.exists(archivo):
         os.remove(archivo)
 
