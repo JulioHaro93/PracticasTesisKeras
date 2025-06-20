@@ -5,12 +5,12 @@ import os
 
 
 frame_count = 0
-for i in range(0,6):
+for i in range(0,3):
 
-    video_path = "/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Leptophlebiidae/Varios-07-03-25/Didier-Cel/vid{}.mp4".format(i)
+    video_path = "C:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Leptophlebiidae/homogeneas/video{}.mp4".format(i)
     
     # Carpeta de destino donde se guardarán los frames
-    place = "/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Leptophlebiidae/Varios-07-03-25/Didier-Cel"
+    place = "C:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Leptophlebiidae/homogeneas"
     
     # Asegúrate de que la carpeta exista (opcional, ya existe en este caso)
     os.makedirs(place, exist_ok=True)
@@ -29,7 +29,7 @@ for i in range(0,6):
                 break  # fin del video
               
             # Guarda cada frame en la carpeta 'place'
-            frame_path = os.path.join(place, f'frame_DidierVarios_{frame_count:04d}.jpg')
+            frame_path = os.path.join(place, f'frame_varios_{frame_count:04d}.jpg')
             cv2.imwrite(frame_path, frame)
             frame_count += 1
     
@@ -38,7 +38,7 @@ for i in range(0,6):
     
     i+=1
     print("//////////////////////////RUTA///////////////////////////")
-    print("/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Leptophlebiidae/Frasco 229/Sam-cel")
+    #print("/home/julio/Documentos/TEST_TESIS/Tesis/db/procesadas/Ephemeroptera/Leptophlebiidae/Frasco 229/Sam-cel")
     print("//////////////////////////RUTA///////////////////////////\n")
     print("####################################################")
     print("VIDEO{}".format(i))
