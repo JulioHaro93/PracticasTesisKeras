@@ -1,11 +1,7 @@
-train: #Ruta de entrenamiento
-val: #ruta de validación
+path: /home/julio/Documentos/TEST_TESIS/PracticasTesisKeras/CNN-VAE_Curso/yololo
+train: images/train
+val: images/val
 
-nc: 5
-
+nc: 1
 names:
-  0: Beatidae
-  1: Canidae
-  2: Heptageniidae
-  3: Leptohyphidae
-  4: Leptoplebiidae
+  0: bug

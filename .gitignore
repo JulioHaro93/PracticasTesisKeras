@@ -1,4 +1,17 @@
-CNN-VAE_Curso/Inference/
-CNN-VAE_Curso/Training/
-Primer Red Neuronal y sus pexos/Primer_ResNet50.h5
-Primer Red Neuronal y sus pexos/tf_model.RN_1.tflite
+/db
+/TestFile
+/yololo
+/runs
+../yolov8b.pt
+/__pycache__
+/.vscode
+/history
+/kfold_files
+/inceptionv3_multiclase.h5
+inceptionv3_multiclase.h5
+ResNet50_0_0.h5
+ResNet50_0_1.h5
+ResNet50_0_2.h5
+ResNet50_0_3.h5
+ResNet50_0_4.h5
+ResNet50_0_5.h5

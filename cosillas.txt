@@ -1,0 +1,29 @@
+tensorflow 2.10.0 requires keras<2.11,>=2.10.0, but you'll have keras 2.11.0 which is incompatible.
+
+
+
+tensorflow 2.10.0 requires protobuf<3.20,>=3.9.2, but you'll have protobuf 3.20.0 which is incompatible.
+
+
+
+tensorflow-intel 2.12.0 requires keras<2.13,>=2.12.0, but you'll have keras 2.11.0 which is incompatible.
+
+
+tensorflow-intel 2.12.0 requires numpy<1.24,>=1.22, but you'll have numpy 2.0.0 which is incompatible.
+
+
+tensorflow-intel 2.12.0 requires protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<5.0.0dev,>=3.20.3, but you'll have protobuf 3.20.0 which is incompatible.
+
+
+tensorflow-intel 2.12.0 requires tensorboard<2.13,>=2.12, but you'll have tensorboard 2.10.0 which is incompatible.
+
+
+tensorflow-intel 2.12.0 requires tensorflow-estimator<2.13,>=2.12.0, but you'll have tensorflow-estimator 2.10.0 which is incompatible.
+
+
+tensorboard 2.10.0 requires protobuf<3.20,>=3.9.2, but you'll have protobuf 3.20.0 which is incompatible.
+
+
+
+
+pip install tensorflow-intel==2.10.0 keras==2.10.0 protobuf==3.9.2 tensorboard==2.10.0 tensorflow-estimator==2.10.0 numpy==1.23.5 --upgrade --force-reinstall

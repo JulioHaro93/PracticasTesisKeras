@@ -23,13 +23,22 @@ X = []
 y = []
 
 def bdRecolector_5c():
+
+    """"
+    dbRecolerctor_5c sirve para poder mandar llamar los archivos dede las rutas en el sistema de archivos local
+    la función toma del diccionario paths las etiquetas y los archivos, están separados por carpetas
+    también genera un adecuado etiquetado iniciando de 0 a 1 cada vez que cambia de ruta de archivos
+    @return X es el conjunto de datos etiquetados para el entrenamiento
+    @return y es el conjunto de datos target
+
+    """
     img_size = (224, 224)
     paths = {
-    'Beatidae':Path(r'c:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Beatidae/recdirect/*.jpg'), #c:\Users\Julio\Documents\tesis\Tesis-BD\Ephemeroptera\Beatidae\recdirect
-    'Caenidae':Path(r'c:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Canidae/recdirect/*.jpg'),
-    'Heptageniidae':Path(r'c:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Heptageniidae/recdirect/*.jpg'),
-    'Leptohyphidae':Path(r'c:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Leptohyphidae/recdirect/*.jpg'),
-    'Leptophlebiidae':Path(r'c:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Leptophlebiidae/recdirect/*.jpg')
+    'Baetidae':'c:/Users/Usuario/Documents/tesis/Tesis-BD/Ephemeroptera/Beatidae/recdirect/*.jpg', #c:\Users\Julio\Documents\tesis\Tesis-BD\Ephemeroptera\Beatidae\recdirect
+    'Caenidae':'c:/Users/Usuario/Documents/tesis/Tesis-BD/Ephemeroptera/Caenidae/recdirect/*.jpg',
+    'Heptageniidae':'c:/Users/Usuario/Documents/tesis/Tesis-BD/Ephemeroptera/Heptageniidae/recdirect/*.jpg',
+    'Leptohyphidae':'c:/Users/Usuario/Documents/tesis/Tesis-BD/Ephemeroptera/Leptohyphidae/recdirect/*.jpg',
+    'Leptophlebiidae':'c:/Users/Usuario/Documents/tesis/Tesis-BD/Ephemeroptera/Leptophlebiidae/recdirect/*.jpg'
     }
 
 
@@ -37,7 +46,7 @@ def bdRecolector_5c():
     label_counter = 0
     max_per_class = 500
     target_size = (224, 224)
-
+    X, y =[],[]
     for label, path in paths.items():
         archivos = glob.glob(path)
         print(f"{label}: {len(archivos)} archivos encontrados")
@@ -58,10 +67,8 @@ def bdRecolector_5c():
             img = cv2.resize(img, target_size)
             X.append(img)
             y.append(label_map[label])
-
-        X = np.array(X, dtype=np.uint8)
-        y = np.array(y)
-
+    X = np.array(X, dtype=np.uint8)
+    y = np.array(y)
     print(f"✅ Forma final de X: {X.shape}")
     print(f"✅ Forma final de y: {y.shape}")
     print(f"🧭 Mapeo de etiquetas: {label_map}")
@@ -70,12 +77,20 @@ def bdRecolector_5c():
     return X, y
 
 def bdrecolector_2by2(labelcillo):
+    """
+    La función bdrecolector_2by2 me genera un dataset de dos clases, la idea es que al recibir el labelcillo genere una base de datos para esa clase
+    y que el resto de archivos 
+    @param labelcillo: labelcillo es la clase en turno para la que se va a entrenar la red comparándola con el resto, ésta debe coincidir con cada
+    uno de los índices de paths
+    @return X es el conjunto de datos etiquetados para el entrenamiento
+    @return y es el conjunto de datos target
+    """
     paths = {
-    'Baetidae':'c:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Beatidae/recdirect/*.jpg', #c:\Users\Julio\Documents\tesis\Tesis-BD\Ephemeroptera\Beatidae\recdirect
-    'Caenidae':'c:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Caenidae/recdirect/*.jpg',
-    'Heptageniidae':'c:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Heptageniidae/recdirect/*.jpg',
-    'Leptohyphidae':'c:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Leptohyphidae/recdirect/*.jpg',
-    'Leptophlebiidae':'c:/Users/Julio/Documents/tesis/Tesis-BD/Ephemeroptera/Leptophlebiidae/recdirect/*.jpg'
+    'Baetidae':'c:/Users/Usuario/Documents/tesis/Tesis-BD/Ephemeroptera/Beatidae/recdirect/*.jpg', #c:\Users\Julio\Documents\tesis\Tesis-BD\Ephemeroptera\Beatidae\recdirect
+    'Caenidae':'c:/Users/Usuario/Documents/tesis/Tesis-BD/Ephemeroptera/Caenidae/recdirect/*.jpg',
+    'Heptageniidae':'c:/Users/Usuario/Documents/tesis/Tesis-BD/Ephemeroptera/Heptageniidae/recdirect/*.jpg',
+    'Leptohyphidae':'c:/Users/Usuario/Documents/tesis/Tesis-BD/Ephemeroptera/Leptohyphidae/recdirect/*.jpg',
+    'Leptophlebiidae':'c:/Users/Usuario/Documents/tesis/Tesis-BD/Ephemeroptera/Leptophlebiidae/recdirect/*.jpg'
     }
 
     X, y = [], []
@@ -134,6 +149,18 @@ def bdrecolector_2by2(labelcillo):
 
 
 def model_basic(X, y, nombrecillo): 
+    """
+    Esta función es para poder entrenar una red neuronal ResNet desde cero hasta el número final de épocas, se agrega earlystopping
+    y regresar a los mejores pesos
+    @params X 
+
+    """
+    try:
+        print(tf.config.list_physical_devices('GPU'))
+        tf.config.experimental.set_memory_growth(tf.config.list_physical_devices('GPU')[0], True)
+        print("Se está utilizando la gpu para el entrenamiento")
+    except:
+        print("No hay gpu disponible, se procede a correr en cpu")
     print("Corriendo entrenamiento de red neuronal desde 0 para la familia {} y el resto de familias".format(nombrecillo))
     callbacks = tf.keras.callbacks.EarlyStopping(
         monitor="val_loss",
@@ -143,7 +170,6 @@ def model_basic(X, y, nombrecillo):
         mode="auto",
         baseline=None,
         restore_best_weights=True,
-        start_from_epoch=0,
     )
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=53)
@@ -161,7 +187,6 @@ def model_basic(X, y, nombrecillo):
     #model.summary()
     model.compile(optimizer='adam',loss='binary_crossentropy',metrics=['accuracy'])
     history = model.fit(X_train, y_train, epochs= 20, batch_size=32, callbacks =[callbacks])
-
     test_loss, test_accuracy = model.evaluate(X_test, y_test)
     print("Test accuracy: {}".format(test_accuracy))
     print("Test loss: {}".format(test_loss))
@@ -213,80 +238,305 @@ def model_preentrenado(X,y, namecito, iteration):
     df = pd.DataFrame(history.history)
     df.to_csv(f"{folder_path}/hist_{namecito}_{iteration}.csv", index=False)
 
-def ResNet50_Sparce(X,y,iteration, clases):
+"""
+ResNet50_Sparce contiene la implementación desde 0 para reentrenar la red ResNet50, con la cuál es posible establecer parámetros para poder realizar el
+entrenamiento de todas las clases a la vez, con el objetivo de poder evaluar el entrenamiento con el método de grad_cam
+
+
+"""
+def ResNet50_Sparce(X, y, iteration, clases):
+    
+    try:
+        print(tf.config.list_physical_devices('GPU'))
+        tf.config.experimental.set_memory_growth(tf.config.list_physical_devices('GPU')[0], True)
+        print("Se está utilizando la gpu para el entrenamiento")
+    except:
+        print("No hay gpu disponible, se procede a correr en cpu")
     print("Corriendo entrenamiento de red neuronal desde 0 para el clasificador multiclase")
     print("familias: {}, {}, {}, {} y {}".format(clases[0], clases[1], clases[2], clases[3], clases[4]))
+
     callbacks = tf.keras.callbacks.EarlyStopping(
         monitor="val_loss",
         min_delta=0,
         patience=4,
-        verbose=0,
+        verbose=1,
         mode="auto",
-        baseline=None,
         restore_best_weights=True,
-        start_from_epoch=0,
     )
-    model = Sequential()
-    if iteration ==0:
+
+    # ==============================
+    # ENTRENAMIENTO NUEVO
+    # ==============================
+    if iteration == 0:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=53)
-        base_model = tf.keras.applications.resnet.ResNet50(include_top=False, weights=None, input_shape=(224,224,3))
-        #base_model.summary()
-        model = Sequential()
-        regularizer = tf.keras.regularizers.l2(0.001)
-        model.add(base_model)
-        model.add(Flatten())
-        model.add(tf.keras.layers.Dense(units=128, activation='relu'))
-        model.add(tf.keras.layers.Dropout(0.3))
-        model.add(tf.keras.layers.Dense(units=60, activation='relu', kernel_regularizer= regularizer))
-        model.add(tf.keras.layers.Dropout(0.5))
-        model.add(tf.keras.layers.Dense(units = 1, activation='softmax'))
-        #model.summary()
-        model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=['sparse_categorical_accuracy'])
-        history = model.fit(X_train, y_train, epochs= 20, batch_size=32, callbacks =[callbacks])
+
+        # Definimos input
+        inputs = tf.keras.Input(shape=(224, 224, 3))
+
+        # ResNet50 sin la parte densa
+        base_model = tf.keras.applications.ResNet50(
+            include_top=False,
+            weights=None,  # Si quieres usar pesos de ImageNet pon "imagenet"
+            input_tensor=inputs
+        )
+
+        x = base_model.output
+        x = tf.keras.layers.Flatten()(x)
+        x = tf.keras.layers.Dense(128, activation="relu")(x)
+        x = tf.keras.layers.Dropout(0.3)(x)
+        x = tf.keras.layers.Dense(60, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.01))(x)
+        x = tf.keras.layers.Dropout(0.5)(x)
+
+        outputs = tf.keras.layers.Dense(len(clases), activation="softmax")(x)
+
+        model = tf.keras.Model(inputs=inputs, outputs=outputs, name="ResNet50_multiclase")
+
+        model.compile(
+            optimizer="adam",
+            loss="sparse_categorical_crossentropy",
+            metrics=["sparse_categorical_accuracy"]
+        )
+
+        history = model.fit(X_train, y_train, epochs=20, batch_size=32, callbacks=[callbacks], validation_split=0.2)
 
         test_loss, test_accuracy = model.evaluate(X_test, y_test)
-        print("Test accuracy: {}".format(test_accuracy))
-        print("Test loss: {}".format(test_loss))
-        
-        model_name = 'ResNet50_{}_0.h5'
-        tf.keras.models.save_model(model, model_name)
+        print(f"Test accuracy: {test_accuracy}")
+        print(f"Test loss: {test_loss}")
 
+        model_name = f'ResNet50_{iteration}_0.h5'
+        model.save(model_name)
 
+        # Exportar a TFLite
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
-
         tflite_model = converter.convert()
-        with open("tf_model_5c_0.tflite_basic", "wb") as f:
+        with open("tf_model_5c_0.tflite", "wb") as f:
             f.write(tflite_model)
-        
+
+        # Guardar historia
         df = pd.DataFrame(history.history)
-
         folder_path = f"./history/5clases"
-        
+        os.makedirs(folder_path, exist_ok=True)
         df.to_csv(f"{folder_path}/hist_5c_0.csv", index=False)
-    elif int(iteration) == 2:
-        epocas = iteration*20
 
-        model = tf.keras.models.load_model('./ResNet50_{}_{}.h5'.format(epocas,iteration-1))
+    # ==============================
+    # CONTINUAR CON ENTRENAMIENTO
+    # ==============================
+    elif int(iteration) >= 1:
+        epocas = iteration * 20
+        model = tf.keras.models.load_model(f'./ResNet50_{iteration-1}_0.h5')
+
         model.summary()
-        model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=['sparse_categorical_crossentropy'])
+        model.compile(
+            optimizer="adam",
+            loss="sparse_categorical_crossentropy",
+            metrics=["sparse_categorical_accuracy"]
+        )
+
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=53)
-        history = model.fit(X_train, y_train, epochs= 20, batch_size=32)
+
+        history = model.fit(X_train, y_train, epochs=20, batch_size=32, validation_split=0.2)
 
         test_loss, test_accuracy = model.evaluate(X_test, y_test)
-        print("Test accuracy: {}".format(test_accuracy))
-        print("Test loss: {}".format(test_loss))
-        model_name = 'ResNet50_{}_{}.h5'.format(epocas,iteration)
-        tf.keras.models.save_model(model, model_name)
+        print(f"Test accuracy: {test_accuracy}")
+        print(f"Test loss: {test_loss}")
+
+        model_name = f'ResNet50_{iteration}_0.h5'
+        model.save(model_name)
 
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
-
         tflite_model = converter.convert()
-        with open("tf_model2.tflite_{}_{}".format(epocas,iteration), "wb") as f:
+        with open(f"tf_model2_{epocas}_{iteration}.tflite", "wb") as f:
             f.write(tflite_model)
-        
+
         folder_path = f"./history/5clases"
         os.makedirs(folder_path, exist_ok=True)
         df = pd.DataFrame(history.history)
         df.to_csv(f"{folder_path}/hist_5c_{iteration}.csv", index=False)
+
+    else:
+        print("No hay opción disponible")
+
+
+def testFunctions(X,y,clase):
+    
+    print("Probar basic_model ingrese 1")
+    print("probar model_preentrenado ingrese 2")
+    print("bdrecolector_2by2 ingrese 3")
+    pregunta =input("desea probar algún modelo")
+    pregunta= int(pregunta)
+    if pregunta ==1:
+        model_basic(X,y,clase)
+    elif pregunta ==2:
+        model_preentrenado(X,y, clase, iteration=1)
+    elif pregunta ==3:
+        bdrecolector_2by2(clase)
+    else:
+        print("No hay esa opción, por lo que se procede al entrenamiento general") 
+
+#ResNet50_Sparce_kfold(X_train, y_train, X_test, y_test, fold=a, epochs=20, resume=True, block=i)
+def ResNet50_Sparce_kfold(X_train, y_train,X_test, y_test, fold, iteration, clases):
+
+    print(f"Entrenando Fold {fold}, Iteración {iteration} (bloque de 20 épocas)")
+    print("Clases:", ", ".join(clases))
+    
+    epocas_por_bloque = 20
+    n_clases = len(clases)
+
+    model_name = f"ResNet50_fold{fold}_iter{iteration}.h5"
+    history_name = f"hist_fold{fold}_iter{iteration}.csv"
+    tflite_name = f"tf_model_fold{fold}_iter{iteration}.tflite"
+
+    #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=53)
+
+    if iteration == 0:
+        base_model = tf.keras.applications.ResNet50(include_top=False, weights=None, input_shape=(224, 224, 3))
+        model = Sequential()
+        model.add(base_model)
+        model.add(tf.keras.layers.Flatten())
+        model.add(tf.keras.layers.Dense(256, activation='relu'))
+        model.add(tf.keras.layers.Dense(128, activation='relu'))
+        model.add(tf.keras.layers.Dropout(0.3))
+        model.add(tf.keras.layers.Dense(60, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001)))
+        model.add(tf.keras.layers.Dropout(0.5))
+        model.add(tf.keras.layers.Dense(n_clases, activation='softmax'))
+        print("Se ha creado desde cero la red neuronal trayendo de applications.ResNet50 de tensorflow con keras")
+        model.summary()
+    else:
+        if not os.path.exists(f"./ResNet50_fold{fold}_iter{iteration-1}.h5"):
+            raise FileNotFoundError(f"No se encontró el modelo anterior para continuar: fold {fold}, iteración {iteration-1}")
+        model = tf.keras.models.load_model(f"./ResNet50_fold{fold}_iter{iteration-1}.h5")
+        print(f"se está entrenando el modelo preentrenado de: ./ResNet50_fold{fold}_iter{iteration-1}.h5")
+
+    model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=['sparse_categorical_accuracy'])
+
+    callbacks = tf.keras.callbacks.EarlyStopping(monitor="val_loss",patience=4,restore_best_weights=True)
+
+    history = model.fit(X_train, y_train,epochs=epocas_por_bloque,batch_size=32,validation_split=0.2,callbacks=[callbacks])
+
+    test_loss, test_accuracy = model.evaluate(X_test, y_test)
+    print(f"[Fold {fold}] Iteración {iteration} - Test accuracy: {test_accuracy:.4f}, Test loss: {test_loss:.4f}")
+
+    model.save(model_name)
+
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    tflite_model = converter.convert()
+    with open(tflite_name, "wb") as f:
+        f.write(tflite_model)
+
+    os.makedirs("./history/5clases", exist_ok=True)
+    df = pd.DataFrame(history.history)
+    df.to_csv(f"./history/5clases/{history_name}", index=False)
+
+def convertidorATFlite(nombre):
+    if not os.path.exists(f"./{nombre}"):
+        raise FileNotFoundError(f"No se encontró el archivo {nombre}")
+    model_base = tf.keras.load_model(f'./{nombre}')
+    tflite_name = nombre
+    converter = tf.lite.TFLiteConverter.from_keras_model(model_base)
+    tflite_model = converter.convert()
+    with open(tflite_name, "wb") as f:
+        f.write(tflite_model)
+
+
+def Inception_v3_Sparce(X, y, iteration, clases):
+    print("Corriendo entrenamiento de red neuronal desde 0 para el clasificador multiclase")
+    print("familias: {}, {}, {}, {} y {}".format(clases[0], clases[1], clases[2], clases[3], clases[4]))
+
+    callbacks = tf.keras.callbacks.EarlyStopping(
+        monitor="val_loss",
+        min_delta=0,
+        patience=4,
+        verbose=1,
+        mode="auto",
+        restore_best_weights=True,
+    )
+
+    # ==============================
+    # ENTRENAMIENTO NUEVO
+    # ==============================
+    if iteration == 0:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=53)
+
+        inputs = tf.keras.Input(shape=(224, 224, 3))
+
+        base_model = tf.keras.applications.ResNet50(
+            include_top=False,
+            weights=None,
+            input_tensor=inputs
+        )
+
+        x = base_model.output
+        x = tf.keras.layers.Flatten()(x)
+        x = tf.keras.layers.Dense(128, activation="relu")(x)
+        x = tf.keras.layers.Dropout(0.3)(x)
+        x = tf.keras.layers.Dense(60, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.001))(x)
+        x = tf.keras.layers.Dropout(0.5)(x)
+
+        outputs = tf.keras.layers.Dense(len(clases), activation="softmax")(x)
+
+        model = tf.keras.Model(inputs=inputs, outputs=outputs, name="inceptionv3_multiclase")
+
+        model.compile(
+            optimizer="adam",
+            loss="sparse_categorical_crossentropy",
+            metrics=["sparse_categorical_accuracy"]
+        )
+
+        history = model.fit(X_train, y_train, epochs=20, batch_size=32, callbacks=[callbacks], validation_split=0.2)
+
+        test_loss, test_accuracy = model.evaluate(X_test, y_test)
+        print(f"Test accuracy: {test_accuracy}")
+        print(f"Test loss: {test_loss}")
+
+        model_name = f'inceptionv3_multiclase.h5'
+        model.save(model_name)
+
+        # Exportar a TFLite
+        converter = tf.lite.TFLiteConverter.from_keras_model(model)
+        tflite_model = converter.convert()
+        with open("tf_inceptionv3_multiclase.tflite", "wb") as f:
+            f.write(tflite_model)
+
+        # Guardar historia
+        df = pd.DataFrame(history.history)
+        folder_path = f"./history/5clases/inception"
+        os.makedirs(folder_path, exist_ok=True)
+        df.to_csv(f"{folder_path}/hist_5c_0.csv", index=False)
+
+    # ==============================
+    # CONTINUAR ENTRENAMIENTO
+    # ==============================
+    elif int(iteration) >= 1:
+        epocas = iteration * 20
+        model = tf.keras.models.load_model(f'./inceptionv3_multiclase.h5')
+
+        model.summary()
+        model.compile(
+            optimizer="adam",
+            loss="sparse_categorical_crossentropy",
+            metrics=["sparse_categorical_accuracy"]
+        )
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=53)
+
+        history = model.fit(X_train, y_train, epochs=20, batch_size=32, validation_split=0.2)
+
+        test_loss, test_accuracy = model.evaluate(X_test, y_test)
+        print(f"Test accuracy: {test_accuracy}")
+        print(f"Test loss: {test_loss}")
+
+        model_name = f'ResNet50_{iteration}_0.h5'
+        model.save(model_name)
+
+        converter = tf.lite.TFLiteConverter.from_keras_model(model)
+        tflite_model = converter.convert()
+        with open(f"tf_inceptionv3_multiclase.tflite", "wb") as f:
+            f.write(tflite_model)
+
+        folder_path = f"./history/5clases/inception"
+        os.makedirs(folder_path, exist_ok=True)
+        df = pd.DataFrame(history.history)
+        df.to_csv(f"{folder_path}/hist_5c_{iteration}.csv", index=False)
+
     else:
         print("No hay opción disponible")
